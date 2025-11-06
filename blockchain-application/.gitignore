@@ -1,0 +1,9 @@
+coverage/*
+veritic-signing-service/.idea/compiler.xml
+veritic-signing-service/.idea/encodings.xml
+veritic-signing-service/.idea/jarRepositories.xml
+veritic-signing-service/.idea/misc.xml
+veritic-signing-service/.idea/vcs.xml
+veritic-signing-service/.vscode/settings.json
+veritic-signing-service/.env
+veritic-signing-service/*/surefire-reports/*

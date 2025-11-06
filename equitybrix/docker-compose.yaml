@@ -1,0 +1,79 @@
+services:
+  # postgres:
+  #   image: postgres
+  #   environment:
+  #     - POSTGRES_USER=lsn
+  #     - POSTGRES_PASSWORD=lsn
+  #     - POSTGRES_DB=equitybrix
+  #   ports:
+  #     - "5431:5432"
+  #   volumes:
+  #     - ./dbscripts:/docker-entrypoint-initdb.d
+  #   logging:
+  #     options:
+  #       max-size: 10m
+  #       max-file: "3"
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   environment:
+  #     - PGADMIN_DEFAULT_EMAIL=lsn@intellasphere.in
+  #     - PGADMIN_DEFAULT_PASSWORD=lsn
+  #   ports:
+  #     - "5050:80"
+  cerbos:
+    image: ghcr.io/cerbos/cerbos
+    container_name: "cerbos"
+    restart: always
+    ports:
+      - 3592:3592
+      - 3593:3593
+    command: server --config=/config/conf.yaml
+    volumes: 
+      - ./config:/config
+    networks:
+      - dev
+    # depends_on:
+    #   - postgres
+  backend:
+    build:
+      context: ./es-services-ra
+      dockerfile: Dockerfile
+    image: backend:latest
+    container_name: "backend"
+    restart: always
+    env_file:
+      - .env.backend
+    ports:
+      - 4001:4001
+    networks:
+      - dev
+  frontend:
+    build:
+      context: ./es-reference-arch
+      dockerfile: Dockerfile
+    image: frontend:latest
+    container_name: "frontend"
+    restart: always
+    env_file:
+      - .env.frontend
+    ports:
+      - 3000:3000
+    networks:
+      - dev
+  sponsor:
+    build:
+      context: ./sponsor-reference
+      dockerfile: Dockerfile
+    image: sponsor:latest
+    container_name: "sponsor"
+    restart: always
+    env_file:
+      - .env.sponsor
+    ports:
+      - 3100:3100
+    networks:
+      - dev
+networks:
+  dev:
+    driver: bridge
+    name: dev

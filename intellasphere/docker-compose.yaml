@@ -1,0 +1,70 @@
+services:
+
+  app:
+    build:
+      context: ./JAVA/IS
+      dockerfile: Dockerfile
+    image: intella:latest
+    container_name: "app"
+    restart: always
+    env_file:
+      - .env.app
+    environment:
+      - spring.kafka.bootstrap-servers=localhost:9092
+    ports:
+      - 8090:8080
+    networks:
+      - dev
+
+  api:
+    # build:
+    #   context: ./JAVA/IS
+    #   dockerfile: Dockerfile
+    image: intella:latest
+    container_name: "api"
+    restart: always
+    env_file:
+      - .env.api
+    environment:
+      - spring.kafka.bootstrap-servers=localhost:9092
+    ports:
+      - 9090:8080
+    networks:
+      - dev
+
+  # platform_app:
+  #   # build:
+  #   #   context: ./JAVA/IS
+  #   #   dockerfile: Dockerfile
+  #   image: intella:latest
+  #   container_name: "platform_app"
+  #   restart: always
+  #   env_file:
+  #     - platform
+  #   environment:
+  #     - spring.kafka.bootstrap-servers=localhost:9092
+  #   ports:
+  #     - 8082:8080
+  #   networks:
+  #     - dev
+
+  # platform_api:
+  #   # build:
+  #   #   context: ./JAVA/IS
+  #   #   dockerfile: Dockerfile
+  #   image: intella:latest
+  #   container_name: "platform_api"
+  #   restart: always
+  #   env_file:
+  #     - platform_api
+  #   environment:
+  #     - spring.kafka.bootstrap-servers=localhost:9092
+  #   ports:
+  #     - 9091:8080
+  #   networks:
+  #     - dev
+
+networks:
+  dev:
+    driver: bridge
+    name: dev

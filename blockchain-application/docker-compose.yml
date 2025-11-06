@@ -1,0 +1,60 @@
+
+services:
+  casper-equitybrix-psql:
+    container_name: casper-equitybrix-psql
+    image: casper-equitybrix-psql:latest
+    build:
+      context: .
+      dockerfile: Dockerfile-psql
+    ports:
+      - "5432:5432"
+    # Enable below to save database in host db folder
+    # volumes:
+    #   - $PWD/db:/var/lib/postgresql/data
+    networks:
+      - dev
+
+  casper-equitybrix-api:
+    container_name: casper-equitybrix-api
+    image: casper-equitybrix-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile-api
+    ports:
+      - "0.0.0.0:8000:8000"
+    depends_on:
+      - casper-equitybrix-psql
+      - casper-equitybrix-kms
+    # Enable below to deploy on production
+    # environment:
+    #   - FAUCET_PRIVATE_KEY=${FAUCET_PRIVATE_KEY})
+    networks:
+      - dev
+
+  casper-equitybrix-kms:
+    container_name: casper-equitybrix-kms
+    image: casper-equitybrix-kms:latest
+    build:
+      context: .
+      dockerfile: Dockerfile-kms
+    ports:
+      - "8080:8080"
+    networks:
+      - dev
+
+  # # Fake kms for CI/CD on same port 8080
+  # casper-equitybrix-kms-test:
+  #   container_name: casper-equitybrix-kms-test
+  #   image: casper-equitybrix-kms-test:latest
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile-kms-test
+  #   ports:
+  #     - "8080:8080"
+  #   networks:
+  #     - dev
+
+networks:
+  dev:
+    driver: bridge
+    name: dev

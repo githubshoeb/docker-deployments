@@ -1,0 +1,20 @@
+version: "3.7"
+services:
+  
+  strapi:
+    build:
+      context: ./strapi_project
+      dockerfile: Dockerfile
+    image: strapi:latest
+    container_name: "strapi"
+    restart: always
+    env_file:
+      - .env.strapi
+    ports:
+      - 1337:1337
+    networks:
+      - dev
+networks:
+  dev:
+    driver: bridge
+    name: dev

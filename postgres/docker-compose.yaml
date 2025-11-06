@@ -1,0 +1,45 @@
+# version: "3.7"
+services:
+  postgres-service:
+    image: postgres
+    container_name: "postgres-1"
+    restart: always
+    environment:
+      - POSTGRES_USER=lsn
+      - POSTGRES_PASSWORD=lsn
+      - POSTGRES_DB=equitybrix
+    ports:
+      - "5431:5432"
+    volumes:
+      - ./dbscripts:/docker-entrypoint-initdb.d
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    networks:
+      - dev
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: "pgadmin"
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=shoeb@intellasphere.in
+      - PGADMIN_DEFAULT_PASSWORD=lsn
+    ports:
+      - "5050:80"
+    networks:
+      - dev
+  # cerbos:
+  #   image: ghcr.io/cerbos/cerbos
+  #   ports:
+  #     - 3592:3592
+  #     - 3593:3593
+  #   command: server --config=/config/conf.yaml
+  #   volumes: 
+  #     - ./config:/config
+  #   depends_on:
+  #     - postgres
+networks:
+  dev:
+    driver: bridge
+    name: dev

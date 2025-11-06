@@ -1,0 +1,243 @@
+version: "3.7"
+
+services:
+
+  mariadb:
+    image: mariadb:10.11.2
+    container_name: "${BRAND}-mariadb"
+    restart: always
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - 3306:3306
+    volumes:
+      - ../scripts:/scripts
+      - ../../../mysql:/var/lib/mysql
+    networks:
+      dev:
+        ipv4_address: ${MARIADB_IP}
+    profiles:
+      - db
+
+  mongo:
+    image: mongo:6.0.4
+    container_name: "${BRAND}-mongo"
+    restart: always
+    ports:
+      - 27018:27017
+    volumes:
+      - ../scripts:/scripts
+      - ../../../mongo/logs:/var/log/mongodb
+      - ../../../mongo/data:/data/db
+    networks:
+      dev:
+        ipv4_address: ${MONGO_IP}
+    profiles:
+      - db
+
+  rabbitmq: 
+    image: rabbitmq:3-management
+    container_name: "${BRAND}-rabbitmq"
+    restart: always
+    ports:
+      - 15672:15672
+      - 5672:5672
+    networks:
+      dev:
+        ipv4_address: ${RABBITMQ_IP}
+    profiles:
+      - infra     
+
+  redis: 
+    image: redis
+    container_name: "${BRAND}-redis"
+    restart: always
+    ports:
+      - 6379:6379
+    networks:
+      dev:
+        ipv4_address: ${REDIS_IP}
+    profiles:
+      - infra
+
+  manet: 
+    image: pdelsante/manet
+    container_name: "${BRAND}-manet"
+    platform: linux/amd64
+    restart: always
+    ports:
+      - 8891:8891
+    networks:
+      dev:
+        ipv4_address: ${MANET_IP}
+    profiles:
+      - infra 
+
+  thumbor: 
+    image: apsl/thumbor
+    container_name: "${BRAND}-thumbor"
+    platform: linux/amd64
+    restart: always
+    ports:
+      - 8888:8000
+    networks:
+      dev:
+        ipv4_address: ${THUMBOR_IP}
+    profiles:
+      - infra
+
+  pusher: 
+    depends_on:
+      - rabbitmq
+    build: 
+      context: ./nodejs
+      dockerfile: Dockerfile
+    image: ${BRAND}-pusher:latest
+    container_name: "${BRAND}-pusher"
+    restart: always
+    ports:
+      - 40000:40000
+    networks:
+      dev:
+        ipv4_address: ${PLATFORM_PUSHER_IP}
+    profiles:
+      - infra
+
+  app:
+    build: 
+      context: ../
+      dockerfile: Dockerfile
+    image: ${BRAND}-platform:latest
+    container_name: "${BRAND}-platform"
+    env_file: ./.env-${ENV}
+    restart: always
+    environment:
+      - spring.profiles.active=${ENV},poll,main
+    ports:
+      - 8080:8080
+    networks:
+      dev:
+        ipv4_address: ${PLATFORM_APP_IP}
+    profiles:
+      - platform     
+
+  api:
+    build: 
+      context: ../
+      dockerfile: Dockerfile
+    image: ${BRAND}-api:latest
+    container_name: "${BRAND}-api"
+    env_file: ./.env-${ENV}
+    restart: always
+    environment:
+      - spring.profiles.active=${ENV},poll,api
+    ports:
+      - 9090:8080
+    networks:
+      dev:
+        ipv4_address: ${PLATFORM_API_IP}
+    profiles:
+      - platform          
+
+  marketplace: 
+    depends_on:
+      - api
+    build: 
+      context: ../../../Affinity-Pages
+      dockerfile: Dockerfile    
+    image: ${BRAND}-marketplace:latest
+    container_name: "${BRAND}-marketplace"
+    env_file: ./.env-${ENV}
+    restart: always
+    ports:
+      - 4200:4200
+    networks:
+      dev:
+        ipv4_address: ${PLATFORM_MARKETPLACE_IP}
+    profiles:
+      - marketplace
+
+  phpmyadmin: 
+    depends_on:
+      - mariadb
+    build: 
+      context: ./myadmin
+      dockerfile: Dockerfile
+    image: ${BRAND}-myadmin:latest
+    container_name: "${BRAND}-myadmin"
+    restart: always
+    ports:
+      - 97:97
+    networks:
+      dev:
+          ipv4_address: ${PHP_MYADMIN_IP}
+    profiles:
+      - db
+
+  haproxy:
+      build: ./haproxy
+      image: ${BRAND}-haproxy:latest
+      container_name: "${BRAND}-haproxy"
+      env_file: ./.env-${ENV}
+      ports:
+        - 80:80
+      expose:
+        - 80
+      # volumes:
+      #   - /etc/letsencrypt:/etc/letsencrypt
+      #   - /var/lib/letsencrypt:/var/lib/letsencrypt
+      #   - /etc/ssl:/etc/ssl
+      networks:
+        dev:
+          ipv4_address: ${HA_PROXY_IP}
+      profiles:
+        - load-balancer
+
+  iframely:
+      depends_on:
+          - redis
+      build:
+        context: ../../../../iframely
+        dockerfile: Dockerfile
+      container_name: "${BRAND}-iframely" 
+      restart: always
+      ports:
+        - "8061:8061"
+      networks:
+        dev:
+          ipv4_address: ${IFRAMELY_IP}
+      profiles:
+        - infra
+  nominatim: 
+    image: mediagis/nominatim:4.2
+    container_name: "${BRAND}-nominatim"
+    platform: linux/amd64
+    environment:
+      - PBF_PATH=/nominatim/pbf/us-latest.osm.pbf
+      - REPLICATION_URL=http://download.geofabrik.de/north-america/us-updates/
+      - NOMINATIM_PASSWORD=IntellaSph3r3
+      - UPDATE_MODE=cointinous
+    volumes:
+          - ../../../nominatim/data:/nominatim/data
+          - ../../../nominatim/data:/nominatim/flatnode
+          - ../../../nominatim/db:/var/lib/postgresql/14/main
+          - ../../../nominatim/pbf:/nominatim/pbf
+    shm_size: 2gb   
+    restart: always
+    ports:
+      - 8989:8080
+    networks:
+      dev:
+        ipv4_address: ${NOMINATIM_IP}
+    profiles:
+      - geo     
+
+networks:
+  dev:
+    driver: bridge
+    name: dev
+    #external: true
+    ipam: 
+      driver: default
+      config:
+        - subnet: ${NETWORK_SUBNET}

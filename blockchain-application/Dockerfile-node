@@ -1,0 +1,22 @@
+FROM debian:bullseye
+
+# Add this line to increase the file descriptor limit
+# RUN ulimit -n 65536
+
+# Append the desired configuration line to the existing limits.conf file
+# RUN echo "casper hard nofile 64000" >> /etc/security/limits.conf
+
+RUN apt-get update && apt-get install -y unzip wget libssl1.1 && apt clean && rm -rf /var/lib/apt/lists/*
+SHELL ["/bin/bash", "--login", "-c"]
+RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+RUN . ~/.bashrc
+RUN nvm install v20.10.0 > /dev/null
+RUN nvm alias default v20.10.0
+RUN npm install -g casper-node-launcher-js
+
+WORKDIR /app
+
+# Set environment variable to enable polling for file watching
+ENV CHOKIDAR_USEPOLLING=true
+
+CMD casper-node-launcher-js node

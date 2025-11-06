@@ -1,0 +1,39 @@
+# Git Sync for Airflow DAGs
+# This integrates seamlessly with your existing docker-compose.yaml
+# NO CHANGES required in your existing Airflow setup!
+#
+# Usage:
+#   1. First start Airflow: docker-compose up -d
+#   2. Then start Git sync: docker-compose -f docker-compose.git-sync.yaml up -d
+#   3. Your DAGs from Git will appear automatically in Airflow!
+
+services:
+  airflow-git-sync:
+    image: openweb/git-sync:0.0.1
+    container_name: airflow-git-sync
+    environment:
+      # Git repository configuration (clean URL without credentials)
+      GIT_SYNC_REPO: "https://github.com/devops-eb/airflow.git"
+      GIT_SYNC_DEST: "/git"
+      GIT_SYNC_BRANCH: "main"
+      GIT_SYNC_REV: "FETCH_HEAD"
+      GIT_SYNC_WAIT: "10"
+      
+      # Authentication using separate variables (the working way)
+      GIT_SYNC_USERNAME: "USERNAME"
+      GIT_SYNC_PASSWORD: "PAT"
+      
+    volumes:
+      # Mount directly to your existing dags directory
+      - ${AIRFLOW_PROJ_DIR:-.}/dags:/git:z
+      
+    networks:
+      - dev
+    
+    restart: unless-stopped
+
+networks:
+  # Use existing dev network from main Airflow setup
+  dev:
+    external: true
+    name: dev

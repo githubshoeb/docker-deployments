@@ -1,0 +1,21 @@
+server:
+  httpListenAddr: ":3592"
+  grpcListenAddr: ":3593"
+  playgroundEnabled: true
+  adminAPI:
+    enabled: true
+    adminCredentials:
+      username: kommareddi
+      passwordHash: JDJ5JDEwJDJtejI2MldEVnJUamRIRFhRVnJLNU9mNUluOXZTazk0ci8za1MzeWJSRzdzSzlEUjJoRW9TCgo=
+
+engine:
+  defaultPolicyVersion: "default"
+
+auxData:
+  jwt:
+    disableVerification: true
+
+storage:
+  driver: "postgres"
+  postgres:
+    url: "postgres://lsn:lsn@postgres-1:5432/equitybrix?sslmode=disable&search_path=public"

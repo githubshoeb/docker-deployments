@@ -1,0 +1,96 @@
+{
+    "repositories": [
+       {
+          "type": "composer",
+          "url": "https://wpackagist.org"
+       },
+       {
+          "type": "package",
+          "package": {
+             "name": "intellapages/astra-child",
+             "version": "1.2.1",
+             "type": "wordpress-theme",
+             "source": {
+                "url": "https://${GITLAB_USERNAME}:${GITLAB_PASSWORD}@gitlabnew.intellasphere.com/intellapages/astra-child.git",
+                "type": "git",
+                "reference": "1.2.1"
+             }
+          }
+       },
+       {
+          "type": "package",
+          "package": {
+             "name": "intellapages/astra",
+             "version": "4.8.8",
+             "type": "wordpress-theme",
+             "source": {
+                "url": "https://${GITLAB_USERNAME}:${GITLAB_PASSWORD}@gitlabnew.intellasphere.com/intellapages/astra.git",
+                "type": "git",
+                "reference": "4.8.8"
+             }
+          }
+       },
+       {
+          "type": "package",
+          "package": {
+             "name": "intellapages/bb-plugin",
+             "type": "wordpress-plugin",
+             "version": "2.8.5.3",
+             "source": {
+                "type": "git",
+                "url": "https://${GITLAB_USERNAME}:${GITLAB_PASSWORD}@gitlabnew.intellasphere.com/intellapages/bb-plugin.git",
+                "reference": "2.8.5.3"
+             }
+          }
+       },
+       {
+          "type": "package",
+          "package": {
+             "name": "intellapages/astra-pro-sites",
+             "type": "wordpress-plugin",
+             "version": "4.4.11",
+             "source": {
+                "type": "git",
+                "url": "https://${GITLAB_USERNAME}:${GITLAB_PASSWORD}@gitlabnew.intellasphere.com/intellapages/astra-pro-sites.git",
+                "reference": "4.4.11"
+             }
+          }
+       },
+       {
+          "type": "package",
+          "package": {
+             "name": "intellapages/optimization",
+             "type": "wordpress-plugin",
+             "version": "1.0.0",
+             "source": {
+                "type": "git",
+                "url": "https://${GITLAB_USERNAME}:${GITLAB_PASSWORD}@gitlabnew.intellasphere.com/intellapages/optimization.git",
+                "reference": "1.0.0"
+             }
+          }
+       }
+    ],
+    "require": {
+       "composer/installers": "~1.0",
+       "intellapages/bb-plugin": "^2.8",
+       "intellapages/astra-pro-sites": "^4.4",
+       "intellapages/astra": "^4.8",
+       "intellapages/astra-child": "^1.2",
+       "wpackagist-plugin/intellasphere": "^1.1",
+       "wpackagist-plugin/miniorange-login-with-eve-online-google-facebook": "^6.26",
+       "intellapages/optimization": "^1.0"
+    },
+    "extra": {
+       "installer-paths": {
+          "/var/www/html/wp-content/plugins/{$name}/": ["type:wordpress-plugin"],
+          "/var/www/html/wp-content/themes/{$name}/": ["type:wordpress-theme"]
+       }
+    },
+    "config": {
+       "allow-plugins": {
+            "composer/installers": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "phpstan/extension-installer": true
+        }
+    }
+ }

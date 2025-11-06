@@ -1,0 +1,98 @@
+version: "3.7"
+
+services:
+
+  mariadb:
+    image: mariadb:10.11.2
+    container_name: "mariadb"
+    restart: always
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - 3306:3306
+    networks:
+      - dev
+
+  mongo:
+    image: mongo:6.0.4
+    command: [--auth]
+    container_name: "mongo"
+    restart: always
+    ports:
+      - 27017:27017
+    networks:
+      - dev
+
+  rabbitmq: 
+    image: rabbitmq:3-management
+    container_name: "rabbitmq"
+    restart: always
+    ports:
+      - 15672:15672
+      - 5672:5672
+    networks:
+      - dev
+
+  redis: 
+    image: redis
+    container_name: "redis"
+    restart: always
+    ports:
+      - 6379:6379
+    networks:
+      - dev
+
+  manet: 
+    image: pdelsante/manet
+    container_name: "manet"
+    platform: linux/amd64
+    restart: always
+    ports:
+      - 8891:8891
+    networks:
+      - dev
+
+  thumbor: 
+    image: ghcr.io/minimalcompact/thumbor:latest
+    container_name: "thumbor"
+    platform: linux/amd64
+    restart: always
+    environment:
+      HTTP_LOADER_VALIDATE_CERTS : "False"
+    ports:
+      - 8888:80
+    networks:
+      - dev
+
+  pusherapp: 
+    depends_on:
+      - rabbitmq
+    build: 
+      context: ./nodejs
+      dockerfile: Dockerfile
+    image: intellasphere/pusher-app:latest
+    container_name: "pusher-app"
+    restart: always
+    ports:
+      - 40000:40000
+    networks:
+      - dev
+
+  phpmyadmin: 
+    depends_on:
+      - mariadb
+    build: 
+      context: ./myadmin
+      dockerfile: Dockerfile
+    image: myadmin:latest
+    container_name: "myadmin"
+    restart: always
+    ports:
+      - 97:97
+    networks:
+      - dev
+
+networks:
+  dev:
+    driver: bridge
+    name: dev

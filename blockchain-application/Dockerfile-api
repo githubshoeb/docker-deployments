@@ -1,0 +1,38 @@
+# syntax=docker/dockerfile:1
+
+FROM debian:12.4-slim
+RUN apt-get update && apt-get install -y unzip wget
+
+# Install NVM
+RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+ENV NVM_DIR /root/.nvm
+RUN . $NVM_DIR/nvm.sh && nvm install v20.10.0 && nvm alias default v20.10.0
+
+# Set environment variables
+ENV NODE_VERSION v20.10.0
+ENV PATH $NVM_DIR/versions/node/$NODE_VERSION/bin:$PATH
+
+# Set the working directory
+WORKDIR /app
+
+# Copy source code
+COPY src src
+COPY pkg-nodejs pkg-nodejs
+
+# Install npm packages and build
+WORKDIR /app/src
+RUN npm install --loglevel=error && npm run build --loglevel=error
+
+COPY entrypoint.sh /app/src
+
+# Install wait-for-it
+RUN wget -O /usr/local/bin/wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && \
+  chmod +x /usr/local/bin/wait-for-it.sh
+
+# Set the default command
+# CMD ["wait-for-it.sh", "casper-equitybrix-psql:5432", "--", "npm", "run", "start:prod"]
+# CMD ["npm", "run", "start:prod"]
+
+RUN /bin/bash -c 'chmod +x /app/src/entrypoint.sh'
+
+ENTRYPOINT ["/app/src/entrypoint.sh"]

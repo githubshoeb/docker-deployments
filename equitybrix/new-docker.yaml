@@ -1,0 +1,45 @@
+version: "3.7"
+services:
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_USER=ganesh
+      - POSTGRES_PASSWORD=lsn
+      - POSTGRES_DB=equitybrix
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./dbscripts:/docker-entrypoint-initdb.d
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    networks:
+      - superset_default
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=ganesh@intellasphere.in
+      - PGADMIN_DEFAULT_PASSWORD=lsn
+    ports:
+      - "5050:80"
+    networks:
+      - superset_default
+  
+  cerbos:
+    image: ghcr.io/cerbos/cerbos
+    ports:
+      - 3592:3592
+      - 3593:3593
+    command: server --config=/config/conf.yaml
+    volumes: 
+      - ./config:/config
+    depends_on:
+      - postgres
+    networks:
+      - superset_default
+
+networks:
+  superset_default:
+    external: true
